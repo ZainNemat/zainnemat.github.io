@@ -3,6 +3,11 @@ import { gsap } from "gsap";
 import CTAButtons from "./components/HeroCTA";
 import SkillsGrid from "./components/SkillsGrid";
 import HeroHeading from "./components/HeroHeading";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+import ProjectGrid from "./components/ProjectGrid";
+
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 interface Project {
   title: string;
@@ -27,7 +32,23 @@ export default function HeroSection({
   const ctaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    const parallaxTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: heroRef.current,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1,
+      },
+    });
+
+    parallaxTl
+      .fromTo(".sky", { y: 0 }, { y: -200 }, 0)
+      .fromTo(".cloud1", { y: 100 }, { y: -800 }, 0)
+      .fromTo(".cloud2", { y: -150 }, { y: -500 }, 0)
+      .fromTo(".cloud3", { y: -50 }, { y: -650 }, 0)
+      .fromTo(".mountBg", { y: -10 }, { y: -100 }, 0);
+
+    const introTl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
     gsap.set(
       [
@@ -43,48 +64,12 @@ export default function HeroSection({
       }
     );
 
-    tl.to(titleRef.current, {
-      opacity: 1,
-      y: 0,
-      duration: 1,
-      delay: 0.3,
-    })
-      .to(
-        subtitleRef.current,
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-        },
-        "-=0.5"
-      )
-      .to(
-        skillsRef.current,
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-        },
-        "-=0.3"
-      )
-      .to(
-        projectsRef.current,
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-        },
-        "-=0.3"
-      )
-      .to(
-        ctaRef.current,
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-        },
-        "-=0.3"
-      );
+    introTl
+      .to(titleRef.current, { opacity: 1, y: 0, duration: 1, delay: 0.3 })
+      .to(subtitleRef.current, { opacity: 1, y: 0, duration: 0.8 }, "-=0.5")
+      .to(skillsRef.current, { opacity: 1, y: 0, duration: 0.8 }, "-=0.3")
+      .to(projectsRef.current, { opacity: 1, y: 0, duration: 0.8 }, "-=0.3")
+      .to(ctaRef.current, { opacity: 1, y: 0, duration: 0.8 }, "-=0.3");
 
     gsap.to(".skill-badge", {
       y: -5,
@@ -95,55 +80,65 @@ export default function HeroSection({
       yoyo: true,
     });
 
-    const projectCards = document.querySelectorAll(".project-card");
+    const projectCards =
+      document.querySelectorAll<HTMLDivElement>(".project-card");
+
+    const enterCard = (card: HTMLDivElement) => {
+      gsap.to(card, { scale: 1.05, duration: 0.3 });
+    };
+    const leaveCard = (card: HTMLDivElement) => {
+      gsap.to(card, { scale: 1, duration: 0.3 });
+    };
+
     projectCards.forEach((card) => {
-      card.addEventListener("mouseenter", () => {
-        gsap.to(card, { scale: 1.05, duration: 0.3 });
-      });
-      card.addEventListener("mouseleave", () => {
-        gsap.to(card, { scale: 1, duration: 0.3 });
-      });
+      const handleEnter = () => enterCard(card);
+      const handleLeave = () => leaveCard(card);
+      card.addEventListener("mouseenter", handleEnter);
+      card.addEventListener("mouseleave", handleLeave);
     });
 
     return () => {
-      tl.kill();
+      introTl.kill();
+      parallaxTl.kill();
+      ScrollTrigger.getAll().forEach((st) => st.kill());
+
+      projectCards.forEach((card) => {
+        card.replaceWith(card.cloneNode(true));
+      });
     };
   }, []);
 
   return (
-    <section ref={heroRef} className="relative z-10 w-full overflow-hidden">
-      <div className="absolute top-20 left-10 w-56 h-56 sm:w-72 sm:h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse pointer-events-none" />
-      <div className="absolute bottom-20 right-10 w-56 h-56 sm:w-72 sm:h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse animation-delay-2000 pointer-events-none" />
+    <section
+      ref={heroRef}
+      className="relative w-full h-screen overflow-hidden bg-cover bg-center"
+      style={{ backgroundImage: "url('/sky.png')" }}
+    >
+      <img
+        src="/cloud1.png"
+        alt="Cloud 1"
+        className="absolute top-20 left-10 w-40 sm:w-56 cloud1"
+      />
+      <img
+        src="/cloud2.png"
+        alt="Cloud 2"
+        className="absolute top-40 right-20 w-48 sm:w-64 cloud2"
+      />
+      <img
+        src="/cloud3.png"
+        alt="Cloud 3"
+        className="absolute top-60 left-1/2 w-44 sm:w-60 -translate-x-1/2 cloud3"
+      />
+      <img
+        src="/mountain-bg.png"
+        alt="Mountain Background"
+        className="absolute inset-0 w-full h-[130%] object-cover object-[center_top] scale-110 mountBg pointer-events-none"
+      />
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-24 sm:py-32 text-center flex flex-col items-center">
         <HeroHeading titleRef={titleRef} subtitleRef={subtitleRef} />
         <SkillsGrid skills={skills} skillsRef={skillsRef} />
-        <div
-        ref={projectsRef}
-        id="projects"
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-12 sm:mb-16 w-full"
-      >
-        {projects.map((project, index) => (
-          <div
-            key={index}
-            className="project-card bg-gray-800/30 backdrop-blur-sm rounded-lg p-5 sm:p-6 border border-gray-700 hover:border-blue-500 transition-all cursor-pointer"
-          >
-            <h3 className="text-lg sm:text-xl font-bold mb-2">{project.title}</h3>
-            <p className="text-gray-400 mb-3 sm:mb-4 text-sm sm:text-base">
-              {project.description}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {project.tech.map((tech, techIndex) => (
-                <span
-                  key={techIndex}
-                  className="text-xs px-2 py-1 bg-blue-500/20 rounded-md text-blue-300"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+        <ProjectGrid projects={projects} projectsRef={projectsRef} />
         <CTAButtons ctaRef={ctaRef} />
       </div>
     </section>
