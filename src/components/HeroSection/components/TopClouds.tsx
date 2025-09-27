@@ -1,11 +1,7 @@
-import { useEffect, type JSX, useRef } from "react";
+import { useRef, useEffect, type JSX} from "react";
 import { gsap } from "gsap";
-import HeroHeading from "./components/HeroHeading";
-import BottomClouds from "./components/BottomClouds";
-import TopClouds from "./components/TopClouds";
 
-export default function HeroSection(): JSX.Element {
-  const titleRef = useRef<HTMLHeadingElement>(null);
+export default function TopClouds(): JSX.Element {
   const cloud1Ref = useRef<HTMLImageElement>(null);
   const cloud2Ref = useRef<HTMLImageElement>(null);
   const cloud3Ref = useRef<HTMLImageElement>(null);
@@ -42,20 +38,31 @@ export default function HeroSection(): JSX.Element {
   }, []);
 
   return (
-    <section
-      className="relative w-full h-screen overflow-hidden bg-cover bg-center"
-      style={{ backgroundImage: "url('/sky.png')" }}
-    >
-      <TopClouds />
+    <>
       <img
-        src="/mountain-bg.png"
-        alt="Mountain Background"
-        className="absolute z-[1] inset-0 w-full h-[120%] object-cover object-[center_top] scale-110 pointer-events-none"
+        ref={cloud1Ref}
+        src="/cloud1.png"
+        alt="Cloud 1"
+        className="absolute top-20 left-10 w-40 sm:w-56"
       />
-      <div className="relative z-10 w-full h-full flex items-center justify-center px-4 sm:px-6 text-center">
-        <HeroHeading titleRef={titleRef} />
-      </div>
-      <BottomClouds />
-    </section>
+      <img
+        ref={cloud2Ref}
+        src="/cloud2.png"
+        alt="Cloud 2"
+        className="absolute top-40 right-20 w-48 sm:w-64"
+      />
+      <img
+        ref={cloud3Ref}
+        src="/cloud3.png"
+        alt="Cloud 3"
+        className="absolute top-60 left-1/2 w-44 sm:w-60 -translate-x-1/2"
+      />
+      <img
+        ref={cloud4Ref}
+        src="/cloud4.png"
+        alt="Cloud 4"
+        className="absolute top-28 right-[40%] w-36 sm:w-52"
+      />
+    </>
   );
 }
